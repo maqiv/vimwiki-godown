@@ -1,8 +1,14 @@
+// TODO: Insert copyright crap
+
+// TODO: Write a nice short description about stuff going on here
+
 package main
 
 import (
-	"flag"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"strconv"
 )
 
 type Flags struct {
@@ -20,20 +26,45 @@ type Flags struct {
 
 func main() {
 
+	fl := parseArguments(os.Args)
+
+	c := ReadFile(fl.input_file)
+	fmt.Println(c)
+}
+
+// Commandline arguments are parsed like defined by vimwiki
+// documentation at:
+// https://github.com/vimwiki/vimwiki/blob/dev/doc/vimwiki.txt#L2091
+func parseArguments(args []string) *Flags {
+
 	f := new(Flags)
 
-	flag.BoolVar(&f.force, "force", true, "Overwrite an existing file")
-	flag.StringVar(&f.syntax, "syntax", "markdown", "The syntax chosen for this wiki")
-	flag.StringVar(&f.extension, "extension", ".md", "The file extension for this wiki")
-	flag.StringVar(&f.output_dir, "output_dir", "~/vimwiki/public_html/", "The full path of the output directory")
-	flag.StringVar(&f.input_file, "input_file", "", "The full path of the wiki page")
-	flag.StringVar(&f.css_file, "css_file", "~/vimwiki/style.css", "The full path of the css file for this wiki")
-	flag.StringVar(&f.template_path, "template_path", "~/vimwiki/templates/", "The full path to the wiki's templates")
-	flag.StringVar(&f.template_default, "template_default", "default", "The default template name")
-	flag.StringVar(&f.template_ext, "template_ext", ".tpl", "The extension of template files")
-	flag.StringVar(&f.root_path, "root_path", "./", "A count of ../ for pages buried in subdirs")
+	frc, err := strconv.ParseBool(args[1])
+	if err != nil {
+		panic(err)
+	}
+	f.force = frc
+	f.syntax = args[2]
+	f.extension = args[3]
+	f.output_dir = args[4]
+	f.input_file = args[5]
+	f.css_file = args[6]
+	f.template_path = args[7]
+	f.template_default = args[8]
+	f.template_ext = args[9]
+	f.root_path = args[10]
 
-	flag.Parse()
+	return f
+}
 
-	fmt.Print(*f)
+func ReadFile(filename string) string {
+
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	content := string(data)
+
+	return content
 }
