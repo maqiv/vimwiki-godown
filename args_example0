@@ -1,0 +1,42 @@
+Vimwiki: Saving Vimwiki files ...
+"~/.syncthing/dotfiles/vimwiki/sdlfkjsdf.wiki" eine Zeile, 14 Zeichen
+"~/.syncthing/dotfiles/vimwiki/asdfsldkj.wiki" eine Zeile, 14 Zeichen
+"~/.syncthing/dotfiles/vimwiki/index.wiki" 14L, 189C
+Vimwiki: Deleting non-wiki html files ...
+Vimwiki: Converting wiki to html files ...
+Vimwiki: Skipping /home/sebastian/.syncthing/dotfiles/vimwiki/_site_html/blll/ahh.wiki
+Vimwiki: Processing /home/sebastian/.syncthing/dotfiles/vimwiki/_site_html/kaaaaa.wiki
+{true markdown .md ~/vimwiki/public_html/  ~/vimwiki/style.css ~/vimwiki/templates/ defaul
+t .tpl ./}^@
+Vimwiki: Skipping /home/sebastian/.syncthing/dotfiles/vimwiki/_site_html/kdkdkd.wiki
+Vimwiki: Skipping /home/sebastian/.syncthing/dotfiles/vimwiki/_site_html/kdkkdfjfurru/dkjd
+fdk.wiki
+Vimwiki: Skipping /home/sebastian/.syncthing/dotfiles/vimwiki/_site_html/sdlfkjsdf.wiki
+Vimwiki: Skipping /home/sebastian/.syncthing/dotfiles/vimwiki/_site_html/sldfkj/dkdkdfj.wi
+ki
+Vimwiki: Processing /home/sebastian/.syncthing/dotfiles/vimwiki/asdfsldkj.wiki
+{true markdown .md ~/vimwiki/public_html/  ~/vimwiki/style.css ~/vimwiki/templates/ defaul
+t .tpl ./}^@
+Vimwiki: Skipping /home/sebastian/.syncthing/dotfiles/vimwiki/blll/ahh.wiki
+Vimwiki: Processing /home/sebastian/.syncthing/dotfiles/vimwiki/index.wiki
+{true markdown .md ~/vimwiki/public_html/  ~/vimwiki/style.css ~/vimwiki/templates/ defaul
+t .tpl ./}^@
+Vimwiki: Skipping /home/sebastian/.syncthing/dotfiles/vimwiki/kaaaaa.wiki
+Vimwiki: Skipping /home/sebastian/.syncthing/dotfiles/vimwiki/kdkdkd.wiki
+Vimwiki: Skipping /home/sebastian/.syncthing/dotfiles/vimwiki/kdkkdfjfurru/dkjdfdk.wiki
+Vimwiki: Skipping /home/sebastian/.syncthing/dotfiles/vimwiki/muh.wiki
+Vimwiki: Processing /home/sebastian/.syncthing/dotfiles/vimwiki/sdfkjsdf/dfhekkggh.wiki
+{true markdown .md ~/vimwiki/public_html/  ~/vimwiki/style.css ~/vimwiki/templates/ defaul
+t .tpl ./}^@
+Vimwiki: Processing /home/sebastian/.syncthing/dotfiles/vimwiki/sdflkjsdf/dfkjdfkj.wiki
+{true markdown .md ~/vimwiki/public_html/  ~/vimwiki/style.css ~/vimwiki/templates/ defaul
+t .tpl ./}^@
+Vimwiki: Skipping /home/sebastian/.syncthing/dotfiles/vimwiki/sdlfkjsdf/sdfdfkj.wiki
+Vimwiki: Processing /home/sebastian/.syncthing/dotfiles/vimwiki/sdlfkjsdf.wiki
+{true markdown .md ~/vimwiki/public_html/  ~/vimwiki/style.css ~/vimwiki/templates/ defaul
+t .tpl ./}^@
+Vimwiki: Skipping /home/sebastian/.syncthing/dotfiles/vimwiki/sldfkj/dkdkdfj.wiki
+Vimwiki: HTML exported to /home/sebastian/.syncthing/dotfiles/vimwiki/_site_html/
+Vimwiki: Done!
+Betätigen Sie die EINGABETASTE oder geben Sie einen Befehl ein
+
