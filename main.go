@@ -18,7 +18,7 @@ import (
 )
 
 const TRG_FILE_EXTENSION string = ".html"
-const RGX_MDWN_HYPERLINK string = `\[(?P<desc>.+)\]\((?P<link>(/?\w+)+(\.\w+))\)`
+const RGX_MDWN_HYPERLINK string = `\[(?P<desc>.+)\]\((?P<link>(/?\w+)+(\.\w+)?)\)`
 
 var url_base_prefix string = "w"
 
@@ -46,7 +46,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	var md_in string
+	var md_in, md_processed string
 	var md_in_raw []byte
 	var renderer blackfriday.Renderer
 	var doc_title string
@@ -57,7 +57,8 @@ func main() {
 
 	// Read input file in markdown format
 	md_in = ReadFile(fl.input_file)
-	md_in_raw = []byte(md_in)
+	md_processed = prefixRelativeHyperlinks(md_in, RGX_MDWN_HYPERLINK, "w")
+	md_in_raw = []byte(md_processed)
 
 	// Convert markdown content to html
 	html_out_raw := blackfriday.Markdown(md_in_raw, renderer, 0)
@@ -77,31 +78,46 @@ func build_trg_filepath(src_filepath string, trg_dir string) string {
 
 	src_filename = filepath.Base(src_filepath)
 	file_basename = strings.TrimSuffix(src_filename, filepath.Ext(src_filename))
-	trg_filename = file_basename + trg_file_extension
+	trg_filename = file_basename + TRG_FILE_EXTENSION
 
 	return filepath.Join(trg_dir, trg_filename)
 }
 
 // Add a prefix to relative links so that they work
 // with custom web server configurations
-func prefix_relative_hyperlink(mdwn_content string, hyperlink_mdwn_ident string, link_pref string, rel_link string) string {
-	var prefixed_rel_link string
+func prefixRelativeHyperlinks(mdwn_content string, hyperlink_mdwn_ident string, link_pref string) string {
+	var patternPrefixedRelativeLink, ret string
+	var patternNames []string
 
 	// Find the solution here with regex stuff:
 	// https://play.golang.org/p/IeAJmtkwB7 (OLD)
 	// https://play.golang.org/p/NzQ3R8FHem (OLD)
 	// https://play.golang.org/p/c0DwYWV-gl
 
-	r := regexp.Compile(hyperlink_mdwn_ident)
+	r, err := regexp.Compile(hyperlink_mdwn_ident)
+	if err != nil {
+		panic("Could not compile hyperlink markdown regex.")
+	}
 
-	r.ReplaceAllStringFunc(mdwn_content, func(sstr string) string {
-		var ret, formatted_url string
+	patternNames = r.SubexpNames()
+	patternPrefixedRelativeLink = fmt.Sprintf("%s/${%s}", path.Clean(link_pref), patternNames[2])
+	//fmt.Println(patternPrefixedRelativeLink)
+	pattern := fmt.Sprintf("[${%s}](%s)", patternNames[1], patternPrefixedRelativeLink)
+	//fmt.Println(pattern)
 
-		sm := r.FindSubmatch(sstr)
-		formatted_url = path.Join(link_pref, sm[2])
-		ret = fmt.Sprintf("[%v](%v)", sm[1], formatted_url)
-	})
+	ret = r.ReplaceAllString(mdwn_content, pattern)
 
+	//r.ReplaceAllStringFunc(mdwn_content, func(sstr string) string {
+	//	var ret, formatted_url string
+
+	//	sm := r.FindStringSubmatch(sstr)
+	//	formatted_url = path.Join(link_pref, sm[2])
+	//	ret = fmt.Sprintf("[%v](%v)", sm[1], formatted_url)
+
+	//  return ret
+	//})
+
+	fmt.Println(ret)
 	return ret
 }
 
