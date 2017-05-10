@@ -17,95 +17,100 @@ import (
 	"github.com/russross/blackfriday"
 )
 
+const RELATIVE_LINKS_PREFIX = "w"
 const TRG_FILE_EXTENSION string = ".html"
 const RGX_MDWN_HYPERLINK string = `\[(?P<desc>.+)\]\((?P<link>(/?\w+)+(\.\w+)?)\)`
 
-var url_base_prefix string = "w"
+var urlBasePrefix string = "w"
 
 type Flags struct {
-	force            bool
-	syntax           string
-	extension        string
-	output_dir       string
-	input_file       string
-	css_file         string
-	template_path    string
-	template_default string
-	template_ext     string
-	root_path        string
+	Force           bool
+	Syntax          string
+	Extension       string
+	OutputDirectory string
+	InputFile       string
+	CssFile         string
+	TmplPath        string
+	TmplDefault     string
+	TmplExtension   string
+	RootPath        string
 }
 
 func main() {
 
+	var targetFilePath string
+	var mdInput, mdInputProcessed string
+	var mdInputRaw []byte
+	var renderer blackfriday.Renderer
+	var docTitle string
+
 	fl := parseArguments(os.Args)
 
 	// Check if file already exists and overwrite flag is not set
-	trg_file_path := build_trg_filepath(fl.input_file, fl.output_dir)
-	if _, err := os.Stat(trg_file_path); os.IsNotExist(err) && !fl.force {
-		fmt.Println("Conversion of file %v aborted: File does exist and force flag is set to 0.", trg_file_path)
+	targetFilePath = BuildTargetFilepath(fl.InputFile, fl.OutputDirectory)
+	if _, err := os.Stat(targetFilePath); os.IsNotExist(err) && !fl.Force {
+		fmt.Println("Conversion of file %v aborted: File does exist and force flag is set to 0.", targetFilePath)
 		os.Exit(0)
 	}
 
-	var md_in, md_processed string
-	var md_in_raw []byte
-	var renderer blackfriday.Renderer
-	var doc_title string
+	docTitle = "insert some titlestuff here"
 
 	// Set document title
-	doc_title = find_document_title()
-	renderer = blackfriday.HtmlRenderer(0, doc_title, fl.css_file)
+	renderer = blackfriday.HtmlRenderer(0, docTitle, fl.CssFile)
 
 	// Read input file in markdown format
-	md_in = ReadFile(fl.input_file)
-	md_processed = prefixRelativeHyperlinks(md_in, RGX_MDWN_HYPERLINK, "w")
-	md_in_raw = []byte(md_processed)
+	mdInput = ReadFile(fl.InputFile)
+	mdInputProcessed = PrefixRelativeHyperlinks(mdInput, RGX_MDWN_HYPERLINK, RELATIVE_LINKS_PREFIX)
+	mdInputRaw = []byte(mdInputProcessed)
 
 	// Convert markdown content to html
-	html_out_raw := blackfriday.Markdown(md_in_raw, renderer, 0)
-	html_out := string(html_out_raw)
+	htmlOutputRaw := blackfriday.Markdown(mdInputRaw, renderer, 0)
+	htmlOutput := string(htmlOutputRaw)
 
-	fmt.Println(string(html_out))
-}
+	fmt.Println(string(htmlOutput))
 
-// TODO: complete function logic
-func find_document_title() string {
-	return "do title"
+	// TODO
+	// Write html content to html file
+	tempFile, _ := ioutil.TempFile("/tmp", "vgdwn")
+	tempFile.WriteString(htmlOutput)
+	fmt.Println("filename -> ", tempFile.Name())
 }
 
 // Construct the target file path where the content will be saved later
-func build_trg_filepath(src_filepath string, trg_dir string) string {
-	var src_filename, file_basename, trg_filename string
+func BuildTargetFilepath(sourceFilepath string, targetDirectory string) string {
+	var sourceFilename, filenameBase, targetFilename string
 
-	src_filename = filepath.Base(src_filepath)
-	file_basename = strings.TrimSuffix(src_filename, filepath.Ext(src_filename))
-	trg_filename = file_basename + TRG_FILE_EXTENSION
+	sourceFilename = filepath.Base(sourceFilepath)
+	filenameBase = strings.TrimSuffix(sourceFilename, filepath.Ext(sourceFilename))
+	targetFilename = filenameBase + TRG_FILE_EXTENSION
 
-	return filepath.Join(trg_dir, trg_filename)
+	return filepath.Join(targetDirectory, targetFilename)
 }
 
 // Add a prefix to relative links so that they work
 // with custom web server configurations
-func prefixRelativeHyperlinks(mdwn_content string, hyperlink_mdwn_ident string, link_pref string) string {
-	var patternPrefixedRelativeLink, ret string
+func PrefixRelativeHyperlinks(mdContent string, hyperlinkMdIdentifier string, hyperlinkPrefix string) string {
+	var patternPrefixedRelativeLink, returnVal string
 	var patternNames []string
+	var r *regexp.Regexp
+	var err error
 
 	// Find the solution here with regex stuff:
 	// https://play.golang.org/p/IeAJmtkwB7 (OLD)
 	// https://play.golang.org/p/NzQ3R8FHem (OLD)
 	// https://play.golang.org/p/c0DwYWV-gl
 
-	r, err := regexp.Compile(hyperlink_mdwn_ident)
-	if err != nil {
+	if r, err = regexp.Compile(hyperlinkMdIdentifier); err != nil {
 		panic("Could not compile hyperlink markdown regex.")
 	}
 
 	patternNames = r.SubexpNames()
-	patternPrefixedRelativeLink = fmt.Sprintf("%s/${%s}", path.Clean(link_pref), patternNames[2])
+	patternPrefixedRelativeLink = fmt.Sprintf("%s/${%s}", path.Clean(hyperlinkPrefix), patternNames[2])
 	//fmt.Println(patternPrefixedRelativeLink)
 	pattern := fmt.Sprintf("[${%s}](%s)", patternNames[1], patternPrefixedRelativeLink)
 	//fmt.Println(pattern)
 
-	ret = r.ReplaceAllString(mdwn_content, pattern)
+	returnVal = r.ReplaceAllString(mdContent, pattern)
 
 	//r.ReplaceAllStringFunc(mdwn_content, func(sstr string) string {
 	//	var ret, formatted_url string
@@ -117,8 +122,8 @@ func prefixRelativeHyperlinks(mdwn_content string, hyperlink_mdwn_ident string, 
 	//  return ret
 	//})
 
-	fmt.Println(ret)
-	return ret
+	fmt.Println(returnVal)
+	return returnVal
 }
 
 // Commandline arguments are parsed like defined by vimwiki
@@ -132,16 +137,16 @@ func parseArguments(args []string) *Flags {
 	if err != nil {
 		panic(err)
 	}
-	f.force = frc
-	f.syntax = args[2]
-	f.extension = args[3]
-	f.output_dir = args[4]
-	f.input_file = args[5]
-	f.css_file = args[6]
-	f.template_path = args[7]
-	f.template_default = args[8]
-	f.template_ext = args[9]
-	f.root_path = args[10]
+	f.Force = frc
+	f.Syntax = args[2]
+	f.Extension = args[3]
+	f.OutputDirectory = args[4]
+	f.InputFile = args[5]
+	f.CssFile = args[6]
+	f.TmplPath = args[7]
+	f.TmplDefault = args[8]
+	f.TmplExtension = args[9]
+	f.RootPath = args[10]
 
 	return f
 }
