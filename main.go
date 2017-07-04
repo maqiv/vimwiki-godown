@@ -1,5 +1,3 @@
-// TODO: Insert copyright crap
-
 // TODO: Write a nice short description about stuff going on here
 
 package main
@@ -17,11 +15,15 @@ import (
 	"github.com/russross/blackfriday"
 )
 
-const RELATIVE_LINKS_PREFIX = "w"
-const TRG_FILE_EXTENSION string = ".html"
-const RGX_MDWN_HYPERLINK string = `\[(?P<desc>.+)\]\((?P<link>(/?\w+)+(\.\w+)?)\)`
+const (
+	TRG_FILE_EXTENSION string = ".html"
 
-var urlBasePrefix string = "w"
+	RGX_MDWN_HYPERLINK string = `\[(?P<desc>.+)\]\((?P<link>(/?\w+)+(\.\w+)?)\)`
+	RGX_MDWN_CHECKBOX  string = `\[(\W|\.|o|O|X){1}\]\W{1}`
+
+	HTML_CKB_UNCHECKED string = `<input type="checkbox" disabled>`
+	HTML_CKB_CHECKED   string = `<input type="checkbox" disabled checked>`
+)
 
 type Flags struct {
 	Force           bool
@@ -34,46 +36,69 @@ type Flags struct {
 	TmplDefault     string
 	TmplExtension   string
 	RootPath        string
+	UrlBasePrefix   string
 }
 
 func main() {
-
 	var targetFilePath string
-	var mdInput, mdInputProcessed string
-	var mdInputRaw []byte
+	var mdRaw, mdOutput string
 	var renderer blackfriday.Renderer
 	var docTitle string
+	var htmlFlags int
+	var mdExtensions int
+	var targetFile *os.File
+	var err error
 
 	fl := parseArguments(os.Args)
 
-	// Check if file already exists and overwrite flag is not set
-	targetFilePath = BuildTargetFilepath(fl.InputFile, fl.OutputDirectory)
-	if _, err := os.Stat(targetFilePath); os.IsNotExist(err) && !fl.Force {
-		fmt.Println("Conversion of file %v aborted: File does exist and force flag is set to 0.", targetFilePath)
-		os.Exit(0)
-	}
-
 	docTitle = "insert some titlestuff here"
 
+	// Check if file already exists and overwrite flag is not set
+	targetFilePath = BuildTargetFilepath(fl.InputFile, fl.OutputDirectory)
+	if _, err = os.Stat(targetFilePath); os.IsNotExist(err) && !fl.Force {
+		fmt.Println("Conversion of file %v aborted: File does exist and force flag is set to 0.", targetFilePath)
+		// Exit with error code different from 0
+		os.Exit(1)
+	}
+
+	htmlFlags = 0 |
+		blackfriday.HTML_COMPLETE_PAGE |
+		blackfriday.HTML_HREF_TARGET_BLANK
+
+	mdExtensions = 0 |
+		blackfriday.EXTENSION_NO_INTRA_EMPHASIS |
+		blackfriday.EXTENSION_TABLES |
+		blackfriday.EXTENSION_FENCED_CODE |
+		blackfriday.EXTENSION_AUTOLINK |
+		blackfriday.EXTENSION_STRIKETHROUGH |
+		blackfriday.EXTENSION_SPACE_HEADERS
+
 	// Set document title
-	renderer = blackfriday.HtmlRenderer(0, docTitle, fl.CssFile)
+	renderer = blackfriday.HtmlRenderer(htmlFlags, docTitle, fl.CssFile)
 
 	// Read input file in markdown format
-	mdInput = ReadFile(fl.InputFile)
-	mdInputProcessed = PrefixRelativeHyperlinks(mdInput, RGX_MDWN_HYPERLINK, RELATIVE_LINKS_PREFIX)
-	mdInputRaw = []byte(mdInputProcessed)
+	mdRaw = readFile(fl.InputFile)
+
+	// Process markdown content
+	if len(fl.UrlBasePrefix) > 0 && fl.UrlBasePrefix != "-" {
+		// Prefix sub-url path to each relative url
+		mdOutput = ProcessRelativeLinks(mdRaw, fl.UrlBasePrefix)
+	}
+	mdOutput = ProcessHtmlCheckboxes(mdOutput)
 
 	// Convert markdown content to html
-	htmlOutputRaw := blackfriday.Markdown(mdInputRaw, renderer, 0)
-	htmlOutput := string(htmlOutputRaw)
+	htmlOutputRaw := blackfriday.Markdown([]byte(mdOutput), renderer, mdExtensions)
+	fmt.Println(string(htmlOutputRaw))
 
-	fmt.Println(string(htmlOutput))
+	// Write processed and converted html content to html file
+	if targetFile, err = os.OpenFile(targetFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666); err != nil {
+		panic(err)
+	}
+	if _, err = targetFile.Write(htmlOutputRaw); err != nil {
+		panic(err)
+	}
 
-	// TODO
-	// Write html content to html file
-	tempFile, _ := ioutil.TempFile("/tmp", "vgdwn")
-	tempFile.WriteString(htmlOutput)
-	fmt.Println("filename -> ", tempFile.Name())
+	os.Exit(0)
 }
 
 // Construct the target file path where the content will be saved later
@@ -89,46 +114,66 @@ func BuildTargetFilepath(sourceFilepath string, targetDirectory string) string {
 
 // Add a prefix to relative links so that they work
 // with custom web server configurations
-func PrefixRelativeHyperlinks(mdContent string, hyperlinkMdIdentifier string, hyperlinkPrefix string) string {
-	var patternPrefixedRelativeLink, returnVal string
-	var patternNames []string
-	var r *regexp.Regexp
+func ProcessRelativeLinks(mdContent string, relLinkPrefix string) string {
 	var err error
+	var ptnPrefixedRelLink, ptnRelLink, returnVal string
+	var ptnRelLinkGroups []string
+	var regRelLink *regexp.Regexp
 
 	// Find the solution here with regex stuff:
 	// https://play.golang.org/p/IeAJmtkwB7 (OLD)
 	// https://play.golang.org/p/NzQ3R8FHem (OLD)
 	// https://play.golang.org/p/c0DwYWV-gl
 
-	if r, err = regexp.Compile(hyperlinkMdIdentifier); err != nil {
-		panic("Could not compile hyperlink markdown regex.")
+	if regRelLink, err = regexp.Compile(RGX_MDWN_HYPERLINK); err != nil {
+		panic("Could not compile relative link markdown regex.")
 	}
 
-	patternNames = r.SubexpNames()
-	patternPrefixedRelativeLink = fmt.Sprintf("%s/${%s}", path.Clean(hyperlinkPrefix), patternNames[2])
-	//fmt.Println(patternPrefixedRelativeLink)
-	pattern := fmt.Sprintf("[${%s}](%s)", patternNames[1], patternPrefixedRelativeLink)
-	//fmt.Println(pattern)
+	// Cleanup and replace relative links to be valid with custom url prefix
+	ptnRelLinkGroups = regRelLink.SubexpNames()
+	ptnPrefixedRelLink = fmt.Sprintf("%s/${%s}%s", path.Clean(relLinkPrefix), ptnRelLinkGroups[2], TRG_FILE_EXTENSION)
+	ptnRelLink = fmt.Sprintf("[${%s}](%s)", ptnRelLinkGroups[1], ptnPrefixedRelLink)
 
-	returnVal = r.ReplaceAllString(mdContent, pattern)
+	returnVal = regRelLink.ReplaceAllString(mdContent, ptnRelLink)
 
-	//r.ReplaceAllStringFunc(mdwn_content, func(sstr string) string {
-	//	var ret, formatted_url string
+	return returnVal
+}
 
-	//	sm := r.FindStringSubmatch(sstr)
-	//	formatted_url = path.Join(link_pref, sm[2])
-	//	ret = fmt.Sprintf("[%v](%v)", sm[1], formatted_url)
+// Convert markdown styled checkboxes to HTML coded checkboxes like Github
+// styled markdown. Decide to set them checked or unchecked based on whether
+// the checkbox is set with "X" or not.
+func ProcessHtmlCheckboxes(mdContent string) string {
+	var err error
+	var returnVal string
+	var regCheckbox *regexp.Regexp
 
-	//  return ret
-	//})
+	if regCheckbox, err = regexp.Compile(RGX_MDWN_CHECKBOX); err != nil {
+		panic("Could not compile checkbox markdown regex.")
+	}
 
-	fmt.Println(returnVal)
+	returnVal = regCheckbox.ReplaceAllStringFunc(mdContent, func(s string) string {
+		var html string
+
+		html = HTML_CKB_UNCHECKED
+		if strings.Contains(s, "X") {
+			html = HTML_CKB_CHECKED
+		}
+
+		return html
+	})
+
 	return returnVal
 }
 
 // Commandline arguments are parsed like defined by vimwiki
 // documentation at:
 // https://github.com/vimwiki/vimwiki/blob/dev/doc/vimwiki.txt#L2091
+//
+// Additionally a url prefix is parsed (UrlBasePrefix) that is prefixed to
+// all relative urls later. This functionality is currently not officially
+// implemented in vimwiki, but at the time writing this I sent a pull request
+// that implements this feature:
+// https://github.com/vimwiki/vimwiki/pull/348
 func parseArguments(args []string) *Flags {
 
 	f := new(Flags)
@@ -147,11 +192,12 @@ func parseArguments(args []string) *Flags {
 	f.TmplDefault = args[8]
 	f.TmplExtension = args[9]
 	f.RootPath = args[10]
+	f.UrlBasePrefix = args[11]
 
 	return f
 }
 
-func ReadFile(filename string) string {
+func readFile(filename string) string {
 
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
