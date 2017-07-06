@@ -2,5 +2,5 @@ Development TODO:
 
   * Find document title by filename
   * Write tests
-  * Read flag for relative url prefix
-  * Rename variables without _ and with camelcases
+  * (DONE) Read flag for relative url prefix
+  * (DONE) Rename variables without _ and with camelcases
