@@ -1,6 +1,6 @@
 Development TODO:
 
   * Find document title by filename
-  * Write tests
+  * (DONE) Write tests
   * (DONE) Read flag for relative url prefix
   * (DONE) Rename variables without _ and with camelcases
