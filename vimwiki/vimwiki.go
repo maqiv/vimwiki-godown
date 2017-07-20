@@ -18,6 +18,20 @@ const (
 	TRG_FILE_EXTENSION string = ".html"
 )
 
+type Flags struct {
+	Force           bool
+	Syntax          string
+	Extension       string
+	OutputDirectory string
+	InputFile       string
+	CssFile         string
+	TmplPath        string
+	TmplDefault     string
+	TmplExtension   string
+	RootPath        string
+	UrlBasePrefix   string
+}
+
 // Construct the target file path where the content will be saved later
 func BuildTargetFilepath(sourceFilepath string, targetDirectory string) string {
 	var sourceFilename, filenameBase, targetFilename string

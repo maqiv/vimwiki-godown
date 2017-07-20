@@ -13,20 +13,6 @@ import (
 	"github.com/russross/blackfriday"
 )
 
-type Flags struct {
-	Force           bool
-	Syntax          string
-	Extension       string
-	OutputDirectory string
-	InputFile       string
-	CssFile         string
-	TmplPath        string
-	TmplDefault     string
-	TmplExtension   string
-	RootPath        string
-	UrlBasePrefix   string
-}
-
 func main() {
 	var targetFilePath string
 	var mdRaw, mdOutput string
@@ -98,9 +84,9 @@ func main() {
 // implemented in vimwiki, but at the time writing this I sent a pull request
 // that implements this feature:
 // https://github.com/vimwiki/vimwiki/pull/348
-func parseArguments(args []string) *Flags {
+func parseArguments(args []string) *v.Flags {
 
-	f := new(Flags)
+	f := new(v.Flags)
 
 	frc, err := strconv.ParseBool(args[1])
 	if err != nil {
