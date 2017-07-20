@@ -33,14 +33,25 @@ func TestProcessRelativeLinks(t *testing.T) {
 		in, prefix, want string
 	}{
 		{
-			`Pellentesque habitant [this is a link here](this/is/a) morbi tristique [an external link](https://www.example.org/?pbla=muh) senectus et netus et malesuada fames ac turpis egestas.`,
+			`Pellentesque habitant [this is a link here](this/is/a) morbi tristique [an external link]
+(https://www.example.org/?pbla=muh) senectus et netus et malesuada fames ac turpis egestas.`,
 			"pref",
-			`Pellentesque habitant [this is a link here](pref/this/is/a.html) morbi tristique [an external link](https://www.example.org/?pbla=muh) senectus et netus et malesuada fames ac turpis egestas.`,
+			`Pellentesque habitant [this is a link here](pref/this/is/a.html) morbi tristique [an external link]
+(https://www.example.org/?pbla=muh) senectus et netus et malesuada fames ac turpis egestas.`,
 		},
 		{
-			`Suspendisse enim, vivamus [a little link](3abc/blamuh) non nec libero nam, magna suspendisse www.exmpl.org ac etiam et eget enim, congue pede lacus fringilla tempus non at, magna erat vel.`,
+			`Suspendisse enim, vivamus [a little link](3abc/blamuh.jpg) non nec libero nam, magna suspendisse www.exmpl.org ac etiam et
+eget enim, congue pede lacus fringilla tempus non at, magna erat vel.`,
 			"",
-			`Suspendisse enim, vivamus [a little link](3abc/blamuh.html) non nec libero nam, magna suspendisse www.exmpl.org ac etiam et eget enim, congue pede lacus fringilla tempus non at, magna erat vel.`,
+			`Suspendisse enim, vivamus [a little link](3abc/blamuh.jpg) non nec libero nam, magna suspendisse www.exmpl.org ac etiam et
+eget enim, congue pede lacus fringilla tempus non at, magna erat vel.`,
+		},
+		{
+			`Suspendisse enim, vivamus [a little link](3abc/blamuh.jpg) non nec libero nam, magna suspendisse www.exmpl.org ac
+etiam et eget enim, congue pede lacus fringilla tempus non at, magna erat vel.`,
+			"hello/",
+			`Suspendisse enim, vivamus [a little link](hello/3abc/blamuh.jpg) non nec libero nam, magna suspendisse www.exmpl.org ac
+etiam et eget enim, congue pede lacus fringilla tempus non at, magna erat vel.`,
 		},
 	}
 

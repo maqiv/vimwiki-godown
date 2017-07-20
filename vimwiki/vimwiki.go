@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	RGX_MDWN_HYPERLINK string = `\[(?P<desc>.+)\]\((?P<link>(/?\w+)+(\.\w+)?)\)`
+	RGX_MDWN_HYPERLINK string = `\[(?P<desc>.+)\]\((?P<link>(?:/?\w+)+)(?P<extension>\.\w+)?\)`
+	RGX_MDWN_IMAGE_EXT string = `\.(gif|jpe?g|bmp|png|webp)`
 	RGX_MDWN_CHECKBOX  string = `\[(\W|\.|o|O|X){1}\]\W{1}`
 
 	HTML_CKB_UNCHECKED string = `<input type="checkbox" disabled>`
@@ -46,30 +47,47 @@ func BuildTargetFilepath(sourceFilepath string, targetDirectory string) string {
 // Add a prefix to relative links so that they work
 // with custom web server configurations
 func ProcessRelativeLinks(mdContent string, relLinkPrefix string) string {
-	var err error
-	var ptnPrefixedRelLink, ptnRelLink, returnVal string
-	var ptnRelLinkGroups []string
-	var regRelLink *regexp.Regexp
+	var fileExtension, returnVal string
+	var regRelLink, regFileExt *regexp.Regexp
+	var regexpGroups = map[string]int{}
 
 	// Find the solution here with regex stuff:
 	// https://play.golang.org/p/IeAJmtkwB7 (OLD)
 	// https://play.golang.org/p/NzQ3R8FHem (OLD)
-	// https://play.golang.org/p/c0DwYWV-gl
+	// https://play.golang.org/p/c0DwYWV-gl (OLD)
+	// https://play.golang.org/p/Pxb0YIwy9X
 
-	if regRelLink, err = regexp.Compile(RGX_MDWN_HYPERLINK); err != nil {
-		panic("Could not compile relative link markdown regex.")
-	}
+	regRelLink = regexp.MustCompile(RGX_MDWN_HYPERLINK)
+	regFileExt = regexp.MustCompile(RGX_MDWN_IMAGE_EXT)
 
 	// Cleanup and replace relative links to be valid with custom url prefix
-	ptnRelLinkGroups = regRelLink.SubexpNames()
 	if len(relLinkPrefix) > 0 {
 		relLinkPrefix = fmt.Sprintf("%s/", path.Clean(relLinkPrefix))
 	}
 
-	ptnPrefixedRelLink = fmt.Sprintf("%s${%s}%s", relLinkPrefix, ptnRelLinkGroups[2], TRG_FILE_EXTENSION)
-	ptnRelLink = fmt.Sprintf("[${%s}](%s)", ptnRelLinkGroups[1], ptnPrefixedRelLink)
+	for i, g := range regRelLink.SubexpNames() {
+		if len(g) > 0 {
+			regexpGroups[g] = i
+		}
+	}
 
-	returnVal = regRelLink.ReplaceAllString(mdContent, ptnRelLink)
+	returnVal = regRelLink.ReplaceAllStringFunc(mdContent, func(s string) string {
+		submatch := regRelLink.FindStringSubmatch(s)
+
+		// Check if the link points to an image
+		fileExtension = submatch[regexpGroups["extension"]]
+		if !regFileExt.MatchString(submatch[regexpGroups["extension"]]) {
+			fileExtension = TRG_FILE_EXTENSION
+		}
+
+		return fmt.Sprintf(
+			"[%s](%s%s%s)",
+			submatch[regexpGroups["desc"]],
+			relLinkPrefix,
+			submatch[regexpGroups["link"]],
+			fileExtension)
+
+	})
 
 	return returnVal
 }
