@@ -1,8 +1,6 @@
 package vimwiki
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestBuildTargetFilepath(t *testing.T) {
 
