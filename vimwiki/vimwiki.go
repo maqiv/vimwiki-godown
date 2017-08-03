@@ -77,12 +77,6 @@ func ProcessRelativeLinks(mdContent string, relLinkPrefix string) string {
 	var regRelLink, regFileExt *regexp.Regexp
 	var regexpGroups = map[string]int{}
 
-	// Find the solution here with regex stuff:
-	// https://play.golang.org/p/IeAJmtkwB7 (OLD)
-	// https://play.golang.org/p/NzQ3R8FHem (OLD)
-	// https://play.golang.org/p/c0DwYWV-gl (OLD)
-	// https://play.golang.org/p/Pxb0YIwy9X
-
 	regRelLink = regexp.MustCompile(RGX_MDWN_HYPERLINK)
 	regFileExt = regexp.MustCompile(RGX_MDWN_IMAGE_EXT)
 
@@ -117,7 +111,7 @@ func ProcessRelativeLinks(mdContent string, relLinkPrefix string) string {
 	return returnVal
 }
 
-// Convert markdown styled checkboxes to HTML coded checkboxes like Github
+// Convert markdown styled checkboxes to HTML encoded checkboxes like Github
 // styled markdown. Decide to set them checked or unchecked based on whether
 // the checkbox is set with "X" or not.
 func ProcessHtmlCheckboxes(mdContent string) string {
@@ -130,14 +124,14 @@ func ProcessHtmlCheckboxes(mdContent string) string {
 	}
 
 	returnVal = regCheckbox.ReplaceAllStringFunc(mdContent, func(s string) string {
-		var html string
+		var encodedHtml string
 
-		html = HTML_CKB_UNCHECKED
+		encodedHtml = HTML_CKB_UNCHECKED
 		if strings.Contains(s, "X") {
-			html = HTML_CKB_CHECKED
+			encodedHtml = HTML_CKB_CHECKED
 		}
 
-		return html
+		return encodedHtml
 	})
 
 	return returnVal
