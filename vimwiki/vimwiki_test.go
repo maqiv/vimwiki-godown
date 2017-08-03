@@ -38,18 +38,20 @@ func TestProcessRelativeLinks(t *testing.T) {
 (https://www.example.org/?pbla=muh) senectus et netus et malesuada fames ac turpis egestas.`,
 		},
 		{
-			`Suspendisse enim, vivamus [a little link](3abc/blamuh.jpg) non nec libero nam, magna suspendisse www.exmpl.org ac etiam et
+			`Suspendisse enim, vivamus [a little link](3abc/blamuh.JPG) non nec libero nam, magna suspendisse www.exmpl.org ac etiam et
 eget enim, congue pede lacus fringilla tempus non at, magna erat vel.`,
 			"",
-			`Suspendisse enim, vivamus [a little link](3abc/blamuh.jpg) non nec libero nam, magna suspendisse www.exmpl.org ac etiam et
+			`Suspendisse enim, vivamus [a little link](3abc/blamuh.JPG) non nec libero nam, magna suspendisse www.exmpl.org ac etiam et
 eget enim, congue pede lacus fringilla tempus non at, magna erat vel.`,
 		},
 		{
-			`Suspendisse enim, vivamus [a little link](3abc/blamuh.jpg) non nec libero nam, magna suspendisse www.exmpl.org ac
-etiam et eget enim, congue pede lacus fringilla tempus non at, magna erat vel.`,
-			"hello/",
-			`Suspendisse enim, vivamus [a little link](hello/3abc/blamuh.jpg) non nec libero nam, magna suspendisse www.exmpl.org ac
-etiam et eget enim, congue pede lacus fringilla tempus non at, magna erat vel.`,
+			`Harenae pedes ducibusque stantem subiectis gerens molire, bene ad ascendunt rubescere signa pressaeque ipse vidit *ille
+dixit* venti comitum? [Ille](blah/muh.jpg) torvis teneret oravere bis, sive. Fato ferrum dissuaserat erit coniungere curvos
+exsereret gener, sequar inpensaque soporem cumque, quid Phoebum sine.`,
+			"nuanu/",
+			`Harenae pedes ducibusque stantem subiectis gerens molire, bene ad ascendunt rubescere signa pressaeque ipse vidit *ille
+dixit* venti comitum? [Ille](nuanu/blah/muh.jpg) torvis teneret oravere bis, sive. Fato ferrum dissuaserat erit coniungere curvos
+exsereret gener, sequar inpensaque soporem cumque, quid Phoebum sine.`,
 		},
 	}
 
@@ -76,6 +78,52 @@ func TestProcessHtmlCheckboxes(t *testing.T) {
 		got := ProcessHtmlCheckboxes(tt.in)
 		if tt.want != got {
 			t.Errorf("ProcessHtmlCheckboxes(%q) = %q, want %q", tt.in, got, tt.want)
+		}
+	}
+}
+
+func TestFindPageTitle(t *testing.T) {
+
+	tests := []struct {
+		in, want string
+	}{
+		{
+			`# Fertque caput in enixa
+
+## Timoris doceo
+
+Lorem markdownum armis; nam *orandus* undis torsi, forte. Auris sed glandes
+**postera natasque** manerent reposco animam quater fuit.
+
+## Noluit capillis rude modo viderat malum
+
+Hoc ea factis pariter **hostibus huic** est sparsus quibus, ventorumque vocat
+*quoque* femina sorsque, non. En ambo etiamnum ardua in hunc Acmon nigraque
+Hyperionis et maiores venturi *vero oras mensis*!`,
+			"Fertque caput in enixa",
+		},
+		{
+			`Postquam celare Prytaninque patria sunt opposui positum *nais* ineunt flammas
+usus. Cum poterit, est ut aestu sumptis incenduntque, luna mihi.
+
+# Cum caelo vaticinatus ignis
+
+Lorem markdownum colle responsaque ultro Epimethida Iolen. **Resque in quoque**
+obitumque; angulus *nisi vota tua* aegra.
+
+## Repetita instructa sensere flumina
+
+Optantemque dictis esses, fera prohibebere tardius est *spatioque ira* oculi
+vestigia tacuit captatam, in, ut Lampetie. Feritate adulter pia, *placet et
+eodem*: dumque!`,
+			"",
+		},
+	}
+
+	for _, tt := range tests {
+		got := FindPageTitle(tt.in)
+		if tt.want != got {
+			t.Errorf("FindPageTitle(%q) = %q, want %q", tt.in, got, tt.want)
 		}
 	}
 }

@@ -25,8 +25,6 @@ func main() {
 
 	fl := parseArguments(os.Args)
 
-	docTitle = "insert some titlestuff here"
-
 	// Check if file already exists and overwrite flag is not set
 	targetFilePath = v.BuildTargetFilepath(fl.InputFile, fl.OutputDirectory)
 	if _, err = os.Stat(targetFilePath); os.IsNotExist(err) && !fl.Force {
@@ -47,9 +45,6 @@ func main() {
 		blackfriday.EXTENSION_STRIKETHROUGH |
 		blackfriday.EXTENSION_SPACE_HEADERS
 
-	// Set document title
-	renderer = blackfriday.HtmlRenderer(htmlFlags, docTitle, fl.CssFile)
-
 	// Read input file in markdown format
 	mdRaw = readFile(fl.InputFile)
 
@@ -59,6 +54,14 @@ func main() {
 		mdOutput = v.ProcessRelativeLinks(mdRaw, fl.UrlBasePrefix)
 	}
 	mdOutput = v.ProcessHtmlCheckboxes(mdOutput)
+
+	// Set document title
+	docTitle = v.FindPageTitle(mdOutput)
+	if len(docTitle) == 0 {
+		docTitle = fl.InputFile
+	}
+
+	renderer = blackfriday.HtmlRenderer(htmlFlags, docTitle, fl.CssFile)
 
 	// Convert markdown content to html
 	htmlOutputRaw := blackfriday.Markdown([]byte(mdOutput), renderer, mdExtensions)

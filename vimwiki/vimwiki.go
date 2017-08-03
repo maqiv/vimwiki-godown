@@ -10,8 +10,9 @@ import (
 
 const (
 	RGX_MDWN_HYPERLINK string = `\[(?P<desc>.+)\]\((?P<link>(?:/?\w+)+)(?P<extension>\.\w+)?\)`
-	RGX_MDWN_IMAGE_EXT string = `\.(gif|jpe?g|bmp|png|webp)`
+	RGX_MDWN_IMAGE_EXT string = `\.(?i:gif|jpe?g|bmp|png|webp)`
 	RGX_MDWN_CHECKBOX  string = `\[(\W|\.|o|O|X){1}\]\W{1}`
+	RGX_MDWN_TITLE     string = `(?m:^\s*\#(?P<title>(\s\w+)+)$)`
 
 	HTML_CKB_UNCHECKED string = `<input type="checkbox" disabled>`
 	HTML_CKB_CHECKED   string = `<input type="checkbox" disabled checked>`
@@ -31,6 +32,31 @@ type Flags struct {
 	TmplExtension   string
 	RootPath        string
 	UrlBasePrefix   string
+}
+
+// Try to guess the page title by crawling the page content with specific rules
+func FindPageTitle(mdContent string) string {
+	var title, firstLine string
+	var regTitleLine, regTitle *regexp.Regexp
+
+	regTitleLine = regexp.MustCompile(RGX_MDWN_TITLE)
+
+	for _, s := range strings.Split(mdContent, "\n") {
+		ts := strings.TrimSpace(s)
+		if len(ts) > 0 {
+			firstLine = ts
+			break
+		}
+	}
+
+	if firstMatch := regTitleLine.FindString(mdContent); strings.TrimSpace(firstMatch) == firstLine {
+		regTitle = regexp.MustCompile(RGX_MDWN_TITLE)
+
+		title = regTitle.ReplaceAllString(firstLine, "${title}")
+		title = strings.TrimSpace(title)
+	}
+
+	return title
 }
 
 // Construct the target file path where the content will be saved later
@@ -86,7 +112,6 @@ func ProcessRelativeLinks(mdContent string, relLinkPrefix string) string {
 			relLinkPrefix,
 			submatch[regexpGroups["link"]],
 			fileExtension)
-
 	})
 
 	return returnVal
