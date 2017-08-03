@@ -1,4 +1,9 @@
-// TODO: Write a nice short description about stuff going on here
+//
+// VimWiki-GoDown
+//
+// A Vimwiki Markdown to HTML converter written in Golang.
+// See README.md for more details.
+//
 
 package main
 
