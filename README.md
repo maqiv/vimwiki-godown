@@ -1,10 +1,10 @@
 # Vimwiki-GoDown
 
-Vimwiki-GoDown is a [Markdown][0] to HTML converter for files created with [Vimwiki][1]. The converter is implemented in [Golang][2]. It's idea is based on the preceding implementation [mikasa_md2html][3] which is written in [Python][4].
+Vimwiki-GoDown is a [Markdown][0] to HTML converter for `.md` files created with [Vimwiki][1]. The converter is implemented in [Golang][2]. It's idea is based on the preceding implementation [mikasa_md2html][3], which is written in [Python][4].
 
 To convert Markdown syntax to HTML Vimwiki-GoDown uses the [Blackfriday Markdown processor][5]. The only conversion that is done manually are checkboxes.
 
-One of the main reasons behind creating another Markdown to HTML converter for Vimwiki is that compared to other converters, Vimwiki-GoDown has the additional ability to prefix relative URLs to other Vimwiki pages. This means that the converted HTML files can be hosted in a subdirectory or rather a URL subpath.
+One of the main reasons behind creating another Markdown to HTML converter for Vimwiki is, that compared to other converters, Vimwiki-GoDown has the additional ability to prefix relative links to other Vimwiki pages. This means that the converted HTML files can be hosted in a subdirectory or rather a URL subpath (of course it can also be used without prefixing links between Vimwiki pages).
 
 ### Installation
 
