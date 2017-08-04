@@ -39,8 +39,8 @@ This software is distributed under the [MIT license][8].
 
 ### ToDo
 
+* Possibility to use templates
 * Ensure compatility to percent codes used in misaka_md2html.py
-* Possibility to used templates
 * Customize title guessing so that TOC heading is not used as title
 * _.... any additional ideas or contributions are very welcome :-)_
 
