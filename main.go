@@ -80,6 +80,7 @@ func main() {
 		panic(err)
 	}
 
+	// Whey, no errors occurred
 	os.Exit(0)
 }
 
@@ -114,6 +115,7 @@ func parseArguments(args []string) *v.Flags {
 	return f
 }
 
+// readFile reads the Markdown content from the source file
 func readFile(filename string) string {
 
 	data, err := ioutil.ReadFile(filename)
