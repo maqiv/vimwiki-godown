@@ -9,10 +9,17 @@ import (
 )
 
 const (
+	// regexp to recognize relative Markdown links to other Vimwiki pages
 	RGX_MDWN_HYPERLINK string = `\[(?P<desc>.+)\]\((?P<link>(?:/?\w+)+)(?P<extension>\.\w+)?\)`
+
+	// regexp to check if the relative link is a link to an image
 	RGX_MDWN_IMAGE_EXT string = `\.(?i:gif|jpe?g|bmp|png|webp)`
-	RGX_MDWN_CHECKBOX  string = `\[(\W|\.|o|O|X){1}\]\W{1}`
-	RGX_MDWN_TITLE     string = `(?m:^\s*\#(?P<title>(\s\w+)+)$)`
+
+	// regexp to find checkboxes in Markdown syntax
+	RGX_MDWN_CHECKBOX string = `\[(\W|\.|o|O|X){1}\]\W{1}`
+
+	// regexp to figure out if we can guess a page title
+	RGX_MDWN_TITLE string = `(?m:^\s*\#(?P<title>(\s\w+)+)$)`
 
 	HTML_CKB_UNCHECKED string = `<input type="checkbox" disabled>`
 	HTML_CKB_CHECKED   string = `<input type="checkbox" disabled checked>`
@@ -20,6 +27,9 @@ const (
 	TRG_FILE_EXTENSION string = ".html"
 )
 
+// Flags represent the parsed parameters coming from Vimwiki.
+// For further details about the parameters that are handed over see
+// https://github.com/vimwiki/vimwiki/blob/dev/doc/vimwiki.txt
 type Flags struct {
 	Force           bool
 	Syntax          string
