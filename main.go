@@ -88,9 +88,8 @@ func main() {
 // https://github.com/vimwiki/vimwiki/blob/dev/doc/vimwiki.txt#L2091
 //
 // Additionally a url prefix is parsed (UrlBasePrefix) that is prefixed to
-// all relative urls later. This functionality is currently not officially
-// implemented in vimwiki, but at the time writing this I sent a pull request
-// that implements this feature:
+// all relative urls later.
+// Related feature pull request for additional parameters:
 // https://github.com/vimwiki/vimwiki/pull/348
 func parseArguments(args []string) *v.Flags {
 
