@@ -1,14 +1,14 @@
 # Vimwiki-GoDown
 
-Vimwiki-GoDown is a [Markdown][0] to HTML converter for `.md` files created with [Vimwiki][1]. The converter is implemented in [Golang][2]. It's idea is based on the preceding implementation [mikasa_md2html][3], which is written in [Python][4].
+Vimwiki-GoDown is a [Markdown][0] to HTML converter for `.md` files that were created with [Vimwiki][1]. The converter is implemented in [Golang][2]. It's idea is based on the preceding implementation [mikasa_md2html][3], which is written in [Python][4].
 
-To convert Markdown syntax to HTML Vimwiki-GoDown uses the [Blackfriday Markdown processor][5]. The only conversion that is done manually are checkboxes.
+To convert Markdown syntax to HTML, Vimwiki-GoDown uses the [Blackfriday Markdown processor][5]. The only conversion that is done manually are checkboxes.
 
-One of the main reasons behind creating another Markdown to HTML converter for Vimwiki is, that compared to other converters, Vimwiki-GoDown has the additional ability to prefix relative links to other Vimwiki pages. This means that the converted HTML files can be hosted in a subdirectory or rather a URL subpath (of course it can also be used without prefixing links between Vimwiki pages).
+One of the main reasons behind creating another Markdown to HTML converter for Vimwiki is that, compared to other converters, Vimwiki-GoDown has the additional ability to prefix relative links to other Vimwiki pages. This means that the converted HTML files can be hosted in a subdirectory, or rather a URL subpath (of course it can also be used without prefixing links between Vimwiki pages).
 
 ### Installation
 
-To run Vimwiki-GoDown an installation of [Golang][2] (Go 1 or above) is required. The following command will install Vimwiki-GoDown into the `$GOPATH/bin` directory:
+To run Vimwiki-GoDown, an installation of [Golang][2] (Go 1 or above) is required. The following command will install Vimwiki-GoDown into the `$GOPATH/bin` directory:
 
 	go get "github.com/maqiv/vimwiki-godown"
 
@@ -16,7 +16,7 @@ Please make sure that the environment variable `$GOPATH` is set correctly and `$
 
 ### Configuration
 
-To get Vimwiki-GoDown running with Vimwiki, only a few settings need to be configured. Parameters that need to be adjusted can be found in the `~/.vim/vimrc` configuration file or rather in the variable `g:vimwiki_list`. The two parameters that are needed for Vimwiki-GoDown are:
+To get Vimwiki-GoDown running with Vimwiki only a few settings need to be configured. Parameters that need to be adjusted can be found in the `~/.vim/vimrc` configuration file or rather in the variable `g:vimwiki_list`. The two parameters that are required for Vimwiki-GoDown are:
 
 * `custom_wiki2html`: Path to the Vimwiki-GoDown binary
 * `custom_wiki2html_args`:  URL Subpath that is prefixed to every relative link between Vimwiki pages
