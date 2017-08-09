@@ -19,14 +19,11 @@ import (
 )
 
 func main() {
-	var targetFilePath string
-	var mdRaw, mdOutput string
-	var renderer blackfriday.Renderer
-	var docTitle string
-	var htmlFlags int
-	var mdExtensions int
-	var targetFile *os.File
+	var targetFilePath, mdOutput, docTitle string
+	var htmlFlags, mdExtensions int
 	var err error
+	var targetFile *os.File
+	var renderer blackfriday.Renderer
 
 	fl := parseArguments(os.Args)
 
@@ -51,13 +48,10 @@ func main() {
 		blackfriday.EXTENSION_SPACE_HEADERS
 
 	// Read input file in markdown format
-	mdRaw = readFile(fl.InputFile)
+	mdOutput = readFile(fl.InputFile)
 
 	// Process markdown content
-	if len(fl.UrlBasePrefix) > 0 && fl.UrlBasePrefix != "-" {
-		// Prefix sub-url path to each relative url
-		mdOutput = v.ProcessRelativeLinks(mdRaw, fl.UrlBasePrefix)
-	}
+	mdOutput = v.ProcessRelativeLinks(mdOutput, fl.UrlBasePrefix)
 	mdOutput = v.ProcessHtmlCheckboxes(mdOutput)
 
 	// Set document title
@@ -110,7 +104,12 @@ func parseArguments(args []string) *v.Flags {
 	f.TmplDefault = args[8]
 	f.TmplExtension = args[9]
 	f.RootPath = args[10]
-	f.UrlBasePrefix = args[11]
+
+	// The "-" (dash) in the parameters that are handed over by Vimwiki means
+	// that the configuration value is left empty.
+	if args[11] != "-" {
+		f.UrlBasePrefix = args[11]
+	}
 
 	return f
 }
