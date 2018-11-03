@@ -13,7 +13,7 @@ import (
 	"os"
 	"strconv"
 
-	v "g.maqiv.com/vimwiki_godown/vimwiki"
+	v "github.com/maqiv/vimwiki-godown/vimwiki"
 
 	"github.com/russross/blackfriday"
 )
